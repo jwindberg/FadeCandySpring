@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: FadeCandySpring
+    ui:
+      title: ${spring.application.name}
+  main:
+    web-application-type: none
