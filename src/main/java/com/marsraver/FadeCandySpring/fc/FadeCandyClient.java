@@ -2,6 +2,7 @@ package com.marsraver.FadeCandySpring.fc;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Random;
@@ -29,6 +30,18 @@ public class FadeCandyClient {
         this.port = port;
         this.layout = layout;
         this.enableShowLocations = true;
+    }
+
+    public void ping() {
+        try {
+            InetAddress inetAddress = InetAddress.getByName(host);
+            if (!inetAddress.isReachable(5000)) {
+                System.err.println("IP address " + host + " is not reachable");
+                System.exit(-1);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public int nextRandomInt() {
@@ -64,8 +77,8 @@ public class FadeCandyClient {
     }
 
     // Set the location of several LEDs arranged in a strip.
-    // Angle is in radians, measured clockwise from +X.
-    // (x,y) is the center of the strip.
+// Angle is in radians, measured clockwise from +X.
+// (x,y) is the center of the strip.
     void ledStrip(int index, int count, float x, float y, float spacing, float angle, boolean reversed) {
         float s = (float) Math.sin(angle);
         float c = (float) Math.cos(angle);
@@ -77,8 +90,8 @@ public class FadeCandyClient {
     }
 
     // Set the location of several LEDs arranged in a grid. The first strip is
-    // at 'angle', measured in radians clockwise from +X.
-    // (x,y) is the center of the grid.
+// at 'angle', measured in radians clockwise from +X.
+// (x,y) is the center of the grid.
     public void ledGrid(int index, int stripLength, int numStrips, float x, float y, float ledSpacing, float stripSpacing,
                         float angle, boolean zigzag) {
         float s = (float) Math.sin(angle + Math.PI / 2.0);
@@ -91,7 +104,7 @@ public class FadeCandyClient {
     }
 
     // Set the location of 64 LEDs arranged in a uniform 8x8 grid.
-    // (x,y) is the center of the grid.
+// (x,y) is the center of the grid.
     public void ledGrid8x8(int index, float x, float y, float spacing, float angle, boolean zigzag) {
         ledGrid(index, 8, 8, x, y, spacing, spacing, angle, zigzag);
     }
@@ -101,21 +114,21 @@ public class FadeCandyClient {
     }
 
     // Should the pixel sampling locations be visible? This helps with
-    // debugging.
-    // Showing locations is enabled by default. You might need to disable it if
-    // our drawing
-    // is interfering with your processing sketch, or if you'd simply like the
-    // screen to be
-    // less cluttered.
+// debugging.
+// Showing locations is enabled by default. You might need to disable it if
+// our drawing
+// is interfering with your processing sketch, or if you'd simply like the
+// screen to be
+// less cluttered.
     public void showLocations(boolean enabled) {
         enableShowLocations = enabled;
     }
 
     // Enable or disable dithering. Dithering avoids the "stair-stepping"
-    // artifact and increases color
-    // resolution by quickly jittering between adjacent 8-bit brightness levels
-    // about 400 times a second.
-    // Dithering is on by default.
+// artifact and increases color
+// resolution by quickly jittering between adjacent 8-bit brightness levels
+// about 400 times a second.
+// Dithering is on by default.
     public void setDithering(boolean enabled) {
         if (enabled)
             firmwareConfig &= ~0x01;
@@ -125,10 +138,10 @@ public class FadeCandyClient {
     }
 
     // Enable or disable frame interpolation. Interpolation automatically blends
-    // between consecutive frames
-    // in hardware, and it does so with 16-bit per channel resolution. Combined
-    // with dithering, this helps make
-    // fades very smooth. Interpolation is on by default.
+// between consecutive frames
+// in hardware, and it does so with 16-bit per channel resolution. Combined
+// with dithering, this helps make
+// fades very smooth. Interpolation is on by default.
     public void setInterpolation(boolean enabled) {
         if (enabled)
             firmwareConfig &= ~0x02;
@@ -138,15 +151,15 @@ public class FadeCandyClient {
     }
 
     // Put the Fadecandy onboard LED under automatic control. It blinks any time
-    // the firmware processes a packet.
-    // This is the default configuration for the LED.
+// the firmware processes a packet.
+// This is the default configuration for the LED.
     public void statusLedAuto() {
         firmwareConfig &= 0x0C;
         sendFirmwareConfigPacket();
     }
 
     // Manually turn the Fadecandy onboard LED on or off. This disables
-    // automatic LED control.
+// automatic LED control.
     public void setStatusLed(boolean on) {
         firmwareConfig |= 0x04; // Manual LED control
         if (on)
@@ -225,10 +238,10 @@ public class FadeCandyClient {
     }
 
     // Automatically called at the end of each draw().
-    // This handles the automatic Pixel to LED mapping.
-    // If you aren't using that mapping, this function has no effect.
-    // In that case, you can call setPixelCount(), setPixel(), and writePixels()
-    // separately.
+// This handles the automatic Pixel to LED mapping.
+// If you aren't using that mapping, this function has no effect.
+// In that case, you can call setPixelCount(), setPixel(), and writePixels()
+// separately.
     public void draw() {
         layout.snap();
         if (pixelLocations == null || layout.getWritableImage() == null) {
@@ -275,8 +288,8 @@ public class FadeCandyClient {
     }
 
     // Change the number of pixels in our output packet.
-    // This is normally not needed; the output packet is automatically sized
-    // by draw() and by setPixel().
+// This is normally not needed; the output packet is automatically sized
+// by draw() and by setPixel().
     public void setPixelCount(int numPixels) {
         int numBytes = 3 * numPixels;
         int packetLen = 4 + numBytes;
@@ -291,7 +304,7 @@ public class FadeCandyClient {
     }
 
     // Directly manipulate a pixel in the output buffer. This isn't needed
-    // for pixels that are mapped to the screen.
+// for pixels that are mapped to the screen.
     public void setPixel(int number, OpcColor c) {
         int offset = 4 + number * 3;
         if (packetData == null || packetData.length < offset + 3) {
@@ -314,9 +327,9 @@ public class FadeCandyClient {
         packetData[offset + 2] = (byte) color;
     }
 
-    // Read a pixel from the output buffer. If the pixel was mapped to the
-    // display,
-    // this returns the value we captured on the previous frame.
+// Read a pixel from the output buffer. If the pixel was mapped to the
+// display,
+// this returns the value we captured on the previous frame.
 //    PColor getPixelColor(int number) {
 //        int offset = 4 + number * 3;
 //        if (packetData == null || packetData.length < offset + 3) {
@@ -326,10 +339,10 @@ public class FadeCandyClient {
 //    }
 
     // Transmit our current buffer of pixel values to the OPC server. This is
-    // handled
-    // automatically in draw() if any pixels are mapped to the screen, but if
-    // you haven't
-    // mapped any pixels to the screen you'll want to call this directly.
+// handled
+// automatically in draw() if any pixels are mapped to the screen, but if
+// you haven't
+// mapped any pixels to the screen you'll want to call this directly.
     void writePixels() {
         if (packetData == null || packetData.length == 0) {
             // No pixel buffer

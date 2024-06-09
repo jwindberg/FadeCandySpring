@@ -153,6 +153,7 @@ public class Paint extends Application {
 
         OpcLayout layout = new OpcLayout(gc, new Robot());
         fadeCandyClient = new FadeCandyClient("192.168.7.63", 7890, layout);
+        fadeCandyClient.ping();
         fadeCandyClient.ledGrid(0, 16, 32,
                 (float) width / 2f, (float) height / 2f,
                 (float) width / 16f,
